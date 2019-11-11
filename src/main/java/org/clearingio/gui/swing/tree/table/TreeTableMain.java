@@ -50,6 +50,14 @@ public class TreeTableMain extends JFrame {
 		jMenuItemOpenOutgoingVisa.addActionListener((e) -> selectFileGetList(this, "OutgoingVisa"));
 		fileMenu.add(jMenuItemOpenOutgoingVisa);
 
+		JMenuItem jMenuItemOpenIncomingCabal = new JMenuItem("Open Incoming CABAL");
+		jMenuItemOpenIncomingCabal.addActionListener((e) -> selectFileGetList(this, "IncomingCABAL"));
+		fileMenu.add(jMenuItemOpenIncomingCabal);
+
+		JMenuItem jMenuItemOpenOutgoingCabal = new JMenuItem("Open Outgoing CABAL");
+		jMenuItemOpenOutgoingCabal.addActionListener((e) -> selectFileGetList(this, "OutgoingCABAL"));
+		fileMenu.add(jMenuItemOpenOutgoingCabal);
+
 		setSize(800, 600);
 	}
 
