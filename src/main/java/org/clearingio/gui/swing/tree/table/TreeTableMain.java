@@ -139,7 +139,6 @@ public class TreeTableMain extends JFrame {
 			String value = null;
 			if (ret instanceof DataElement) {
 				children = parseMyDataNode(ret);
-				listMyDataNode.add(new MyDataNode(field.getName(), "", field.getAnnotation(Bit.class).name(), null));
 			} else {
 				value = parse(ret);
 			}
