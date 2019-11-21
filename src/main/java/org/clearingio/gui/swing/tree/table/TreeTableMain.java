@@ -3,9 +3,11 @@ package org.clearingio.gui.swing.tree.table;
 import org.beanio.annotation.Record;
 import org.clearingio.file.StreamFactoryClearingIO;
 import org.clearingio.ipm.MsgIpm;
+import org.clearingio.ipm.annotation.PDS;
 import org.clearingio.ipm.file.RdwDataInputStream;
 import org.clearingio.iso8583.annotation.Bit;
 import org.clearingio.iso8583.annotation.enumeration.Encode;
+import org.clearingio.iso8583.builder.DataElement;
 import org.clearingio.iso8583.builder.MsgBuilder;
 
 import javax.swing.*;
@@ -22,7 +24,7 @@ public class TreeTableMain extends JFrame {
 	private StreamFactoryClearingIO streamFactoryClearingIO = new StreamFactoryClearingIO();
 
 	public TreeTableMain() {
-		super("Tree Table Demo");
+		super("ClearingIO");
 
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -103,7 +105,7 @@ public class TreeTableMain extends JFrame {
 		pack();
 	}
 
-	private String parseException(Exception e) {
+	private static String parseException(Exception e) {
 		StackTraceElement st[] = e.getStackTrace();
 		String err = "";
 		for(int i = 0; i < st.length; i++){
@@ -112,29 +114,43 @@ public class TreeTableMain extends JFrame {
 		return err;
 	}
 
-	private static String get(String name, Object obj) {
+	private static Object getObject(String name, Object obj) {
 		try {
 			name = name.substring(0,1).toUpperCase().concat(name.substring(1));
 			Method method = obj.getClass().getMethod("get" + name);
 			Object ret = method.invoke(obj);
-			return ret != null ? String.valueOf(ret): null;
+			return ret;
 		} catch (Exception e) {
 			return e.getMessage();
 		}
+	}
+
+	private static String parse(Object ret) {
+		return ret != null ? String.valueOf(ret): null;
 	}
 
 	private static List<MyDataNode> parseMyDataNode(Object obj) {
 		List<MyDataNode> listMyDataNode = new ArrayList<MyDataNode>();
 		List<Field> listField = defFields(obj.getClass());
 		for (Field field: listField) {
-			String value = get(field.getName(), obj);
-			if(value == null) continue;
+			Object ret = getObject(field.getName(), obj);
+			if(ret == null) continue;
+			List<MyDataNode> children = null;
+			String value = null;
+			if (ret instanceof DataElement) {
+				children = parseMyDataNode(ret);
+				listMyDataNode.add(new MyDataNode(field.getName(), "", field.getAnnotation(Bit.class).name(), null));
+			} else {
+				value = parse(ret);
+			}
 			String description = "";
 			if(field.isAnnotationPresent(org.beanio.annotation.Field.class))
 				description = field.getAnnotation(org.beanio.annotation.Field.class).name();
 			if(field.isAnnotationPresent(Bit.class))
 				description = field.getAnnotation(Bit.class).name();
-			listMyDataNode.add(new MyDataNode(field.getName(), value, description, null));
+			if(field.isAnnotationPresent(PDS.class))
+				description = field.getAnnotation(PDS.class).name();
+			listMyDataNode.add(new MyDataNode(field.getName(), value, description, children));
 		}
 		return listMyDataNode;
 	}
