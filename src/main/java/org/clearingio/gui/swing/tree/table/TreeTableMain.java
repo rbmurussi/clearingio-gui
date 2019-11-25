@@ -8,7 +8,7 @@ import org.clearingio.ipm.annotation.Subfield;
 import org.clearingio.ipm.file.RdwDataInputStream;
 import org.clearingio.iso8583.annotation.Bit;
 import org.clearingio.iso8583.annotation.enumeration.Encode;
-import org.clearingio.iso8583.builder.Data;
+import org.clearingio.iso8583.builder.DataElement;
 import org.clearingio.iso8583.builder.MsgBuilder;
 
 import javax.swing.*;
@@ -138,11 +138,11 @@ public class TreeTableMain extends JFrame {
 			if(ret == null) continue;
 			List<MyDataNode> children = null;
 			String value = null;
-			if (ret instanceof Data) {
+			if (ret instanceof DataElement) {
 				children = parseMyDataNode(ret);
-			} else {
-				value = parse(ret);
 			}
+			value = parse(ret);
+
 			String description = "";
 			if(field.isAnnotationPresent(org.beanio.annotation.Field.class))
 				description = field.getAnnotation(org.beanio.annotation.Field.class).name();
