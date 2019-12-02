@@ -17,8 +17,10 @@ import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class TreeTableMain extends JFrame {
 
@@ -130,18 +132,25 @@ public class TreeTableMain extends JFrame {
 		return ret != null ? String.valueOf(ret): null;
 	}
 
-	private static List<MyDataNode> parseMyDataNode(Object obj) {
+	private static List<MyDataNode> parseMyDataNode(Object obj, int i) {
 		List<MyDataNode> listMyDataNode = new ArrayList<MyDataNode>();
 		List<Field> listField = defFields(obj.getClass());
 		for (Field field: listField) {
 			Object ret = getObject(field.getName(), obj);
 			if(ret == null) continue;
 			List<MyDataNode> children = null;
-			String value = null;
 			if (ret instanceof DataElement) {
-				children = parseMyDataNode(ret);
+				children = parseMyDataNode(ret, 0);
 			}
-			value = parse(ret);
+			if(ret instanceof Collection) {
+				children = new ArrayList<>();
+				ArrayList list = ArrayList.class.cast(ret);
+				for(int index = 0; index < list.size(); index++) {
+					Object action = list.get(index);
+					children.addAll(parseMyDataNode(action, index + 1));
+				}
+			}
+			String value = parse(ret);
 
 			String description = "";
 			if(field.isAnnotationPresent(org.beanio.annotation.Field.class))
@@ -152,7 +161,8 @@ public class TreeTableMain extends JFrame {
 				description = field.getAnnotation(PDS.class).name();
 			if(field.isAnnotationPresent(Subfield.class))
 				description = field.getAnnotation(Subfield.class).name();
-			listMyDataNode.add(new MyDataNode(field.getName(), value, description, children));
+			String name = field.getName() + (i == 0 ? "" : "[" + i + "]");
+			listMyDataNode.add(new MyDataNode(name, value, description, children));
 		}
 		return listMyDataNode;
 	}
@@ -174,7 +184,7 @@ public class TreeTableMain extends JFrame {
 		int i = 1;
 		while(itObject.hasNext()) {
 			Object object = itObject.next();
-			List<MyDataNode> children = parseMyDataNode(object);
+			List<MyDataNode> children = parseMyDataNode(object, 0);
 			String description = "";
 			if(object.getClass().isAnnotationPresent(Record.class))
 				description = object.getClass().getAnnotation(Record.class).name();
