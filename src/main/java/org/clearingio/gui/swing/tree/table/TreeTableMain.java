@@ -6,6 +6,7 @@ import org.clearingio.ipm.MsgIpm;
 import org.clearingio.ipm.annotation.PDS;
 import org.clearingio.ipm.annotation.Subfield;
 import org.clearingio.ipm.file.RdwDataInputStream;
+import org.clearingio.ipm.file.RdwFileIO;
 import org.clearingio.iso8583.annotation.Bit;
 import org.clearingio.iso8583.annotation.enumeration.Encode;
 import org.clearingio.iso8583.builder.DataElement;
@@ -16,6 +17,7 @@ import java.awt.*;
 import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -36,41 +38,82 @@ public class TreeTableMain extends JFrame {
 		JMenuBar jMenuBar = new JMenuBar();
 		setJMenuBar(jMenuBar);
 
-		JMenu fileMenu = new JMenu("File");
-		jMenuBar.add(fileMenu);
+		JMenu jMenuFile = new JMenu("File");
+		jMenuBar.add(jMenuFile);
 
 		JMenuItem jMenuItemOpenISO8583 = new JMenuItem("Open ISO-8583");
 		jMenuItemOpenISO8583.addActionListener((e) -> openISO8583());
-		fileMenu.add(jMenuItemOpenISO8583);
+		jMenuFile.add(jMenuItemOpenISO8583);
 
 		JMenuItem jMenuItemOpenIncomingELO = new JMenuItem("Open Incoming ELO");
 		jMenuItemOpenIncomingELO.addActionListener((e) -> selectFileGetList(this, "IncomingELO"));
-		fileMenu.add(jMenuItemOpenIncomingELO);
+		jMenuFile.add(jMenuItemOpenIncomingELO);
 
 		JMenuItem jMenuItemOpenIncomingVisa = new JMenuItem("Open Incoming VISA");
 		jMenuItemOpenIncomingVisa.addActionListener((e) -> selectFileGetList(this, "IncomingVisa"));
-		fileMenu.add(jMenuItemOpenIncomingVisa);
+		jMenuFile.add(jMenuItemOpenIncomingVisa);
 
 		JMenuItem jMenuItemOpenOutgoingVisa = new JMenuItem("Open Outgoing VISA");
 		jMenuItemOpenOutgoingVisa.addActionListener((e) -> selectFileGetList(this, "OutgoingVisa"));
-		fileMenu.add(jMenuItemOpenOutgoingVisa);
+		jMenuFile.add(jMenuItemOpenOutgoingVisa);
 
 		JMenuItem jMenuItemOpenIncomingCabal = new JMenuItem("Open Incoming CABAL");
 		jMenuItemOpenIncomingCabal.addActionListener((e) -> selectFileGetList(this, "IncomingCABAL"));
-		fileMenu.add(jMenuItemOpenIncomingCabal);
+		jMenuFile.add(jMenuItemOpenIncomingCabal);
 
 		JMenuItem jMenuItemOpenOutgoingCabal = new JMenuItem("Open Outgoing CABAL");
 		jMenuItemOpenOutgoingCabal.addActionListener((e) -> selectFileGetList(this, "OutgoingCABAL"));
-		fileMenu.add(jMenuItemOpenOutgoingCabal);
+		jMenuFile.add(jMenuItemOpenOutgoingCabal);
 
+		JMenu jMenuConversion = new JMenu("Conversion");
+		jMenuBar.add(jMenuConversion);
+		
+		JMenuItem jMenuItemBlockedToRdw = new JMenuItem("Blocked to RDW");
+		jMenuItemBlockedToRdw.addActionListener((e) -> {
+			try {
+				RdwFileIO.fromFileBlocked(getSelectedFile());
+			} catch (IOException ex) {
+				JOptionPane.showMessageDialog(this, this.parseException(ex), ex.getMessage(), JOptionPane.ERROR_MESSAGE);
+				ex.printStackTrace();
+			}
+		});
+		jMenuConversion.add(jMenuItemBlockedToRdw);
+		
+		JMenuItem jMenuItemRdwToBlocked = new JMenuItem("RDW to Blocked");
+		jMenuItemRdwToBlocked.addActionListener((e) -> {
+			try {
+				RdwFileIO.toFileBlocked(getSelectedFile());
+			} catch (IOException ex) {
+				JOptionPane.showMessageDialog(this, this.parseException(ex), ex.getMessage(), JOptionPane.ERROR_MESSAGE);
+				ex.printStackTrace();
+			}
+		});
+		jMenuConversion.add(jMenuItemRdwToBlocked);
+		
+		JMenuItem jMenuItemRdwMpeCompressToMpeNoCompress = new JMenuItem("RDW MPE Compress to MPE NO Compress");
+		jMenuItemRdwMpeCompressToMpeNoCompress.addActionListener((e) -> {
+			try {
+				RdwFileIO.toMPENonCompress(getSelectedFile(), Encode.EBCDIC, Encode.ASCII);
+			} catch (IOException | ParseException ex) {
+				JOptionPane.showMessageDialog(this, this.parseException(ex), ex.getMessage(), JOptionPane.ERROR_MESSAGE);
+				ex.printStackTrace();
+			}
+		});
+		jMenuConversion.add(jMenuItemRdwMpeCompressToMpeNoCompress);
+		
 		setSize(800, 600);
 	}
 
+	private File getSelectedFile() {
+		JFileChooser jFileChooser = new JFileChooser();
+		jFileChooser.showOpenDialog(this);
+		File file = jFileChooser.getSelectedFile();
+		return file;
+	}
+	
 	private void selectFileGetList(TreeTableMain treeTableMain, String outgoingVisa) {
 		try {
-			JFileChooser jFileChooser = new JFileChooser();
-			jFileChooser.showOpenDialog(treeTableMain);
-			File file = jFileChooser.getSelectedFile();
+			File file = getSelectedFile();
 			System.out.println(file.getAbsolutePath());
 			List<Object> list = streamFactoryClearingIO.createReader(outgoingVisa, file);
 			MyDataNode myDataNode = load(list.iterator(), file.getAbsolutePath());
@@ -85,9 +128,7 @@ public class TreeTableMain extends JFrame {
 	}
 
 	private void openISO8583() {
-		JFileChooser jFileChooser = new JFileChooser();
-		jFileChooser.showOpenDialog(this);
-		File file = jFileChooser.getSelectedFile();
+		File file = getSelectedFile();
 		System.out.println(file.getAbsolutePath());
 
 		List<Object> list = new ArrayList<>();
