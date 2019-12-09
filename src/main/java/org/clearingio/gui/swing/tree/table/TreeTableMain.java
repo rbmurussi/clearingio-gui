@@ -9,7 +9,7 @@ import org.clearingio.ipm.file.RdwDataInputStream;
 import org.clearingio.ipm.file.RdwFileIO;
 import org.clearingio.iso8583.annotation.Bit;
 import org.clearingio.iso8583.annotation.enumeration.Encode;
-import org.clearingio.iso8583.builder.DataElement;
+import org.clearingio.iso8583.builder.Packing;
 import org.clearingio.iso8583.builder.MsgBuilder;
 
 import javax.swing.*;
@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class TreeTableMain extends JFrame {
 
@@ -180,7 +179,7 @@ public class TreeTableMain extends JFrame {
 			Object ret = getObject(field.getName(), obj);
 			if(ret == null) continue;
 			List<MyDataNode> children = null;
-			if (ret instanceof DataElement) {
+			if (ret instanceof Packing) {
 				children = parseMyDataNode(ret, 0);
 			}
 			if(ret instanceof Collection) {
