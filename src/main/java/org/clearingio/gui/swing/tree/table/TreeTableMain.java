@@ -138,6 +138,7 @@ public class TreeTableMain extends JFrame {
 				list.add(msgBuilder.unpack(in.next()));
 			}
 		} catch (Exception e) {
+			e.printStackTrace();
 			JOptionPane.showMessageDialog(this, parseException(e), e.getMessage(), JOptionPane.ERROR_MESSAGE);
 		}
 
