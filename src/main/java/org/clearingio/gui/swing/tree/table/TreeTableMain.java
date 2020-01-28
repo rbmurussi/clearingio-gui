@@ -11,6 +11,8 @@ import org.clearingio.iso8583.annotation.Bit;
 import org.clearingio.iso8583.annotation.enumeration.Encode;
 import org.clearingio.iso8583.builder.Packing;
 import org.clearingio.iso8583.builder.MsgBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
@@ -26,6 +28,11 @@ import java.util.List;
 public class TreeTableMain extends JFrame {
 
 	private StreamFactoryClearingIO streamFactoryClearingIO = new StreamFactoryClearingIO();
+	private final Logger LOGGER = LoggerFactory.getLogger(TreeTableMain.class);
+
+	static {
+		System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "DEBUG");
+	}
 
 	public TreeTableMain() {
 		super("ClearingIO");
@@ -134,8 +141,14 @@ public class TreeTableMain extends JFrame {
 
 		try(RdwDataInputStream in = new RdwDataInputStream(new FileInputStream(file))) {
 			MsgBuilder<MsgIpm> msgBuilder = new MsgBuilder<>(MsgIpm.class, Encode.EBCDIC);
+			int i = 1;
 			while(in.hasNext()) {
-				list.add(msgBuilder.unpack(in.next()));
+				byte[] b = in.next();
+				try {
+					list.add(msgBuilder.unpack(b));
+				} catch (RuntimeException ex) {
+					LOGGER.error(i + "=>" + new String(b, "cp037"));
+				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
