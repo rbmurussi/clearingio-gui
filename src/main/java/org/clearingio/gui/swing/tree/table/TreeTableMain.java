@@ -1,5 +1,7 @@
 package org.clearingio.gui.swing.tree.table;
 
+import org.beanio.BeanReaderErrorHandler;
+import org.beanio.BeanReaderException;
 import org.beanio.annotation.Record;
 import org.clearingio.file.StreamFactoryClearingIO;
 import org.clearingio.ipm.MsgIpm;
@@ -121,7 +123,14 @@ public class TreeTableMain extends JFrame {
 		try {
 			File file = getSelectedFile();
 			System.out.println(file.getAbsolutePath());
-			List<Object> list = streamFactoryClearingIO.createReader(outgoingVisa, file);
+			BeanReaderErrorHandler ex = new BeanReaderErrorHandler() {
+				@Override
+				public void handleError(BeanReaderException e) throws Exception {
+					System.err.println(e.getRecordContext().getRecordText());
+					JOptionPane.showMessageDialog(null, parseException(e), e.getMessage(), JOptionPane.ERROR_MESSAGE);
+				}
+			};
+			List<Object> list = streamFactoryClearingIO.createReader(outgoingVisa, file, ex);
 			MyDataNode myDataNode = load(list.iterator(), file.getAbsolutePath());
 			MyAbstractTreeTableModel treeTableModel = new MyDataModel(myDataNode);
 			MyTreeTable myTreeTable = new MyTreeTable(treeTableModel);
