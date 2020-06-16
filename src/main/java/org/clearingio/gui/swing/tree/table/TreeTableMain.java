@@ -22,9 +22,7 @@ import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
+import java.util.*;
 import java.util.List;
 
 public class TreeTableMain extends JFrame {
@@ -72,6 +70,14 @@ public class TreeTableMain extends JFrame {
 		JMenuItem jMenuItemOpenOutgoingCabal = new JMenuItem("Open Outgoing CABAL");
 		jMenuItemOpenOutgoingCabal.addActionListener((e) -> selectFileGetList(this, "OutgoingCABAL"));
 		jMenuFile.add(jMenuItemOpenOutgoingCabal);
+
+		JMenuItem jMenuItemOpenMPEFullFileReplacement = new JMenuItem("Open MPE Full File Replacement");
+		jMenuItemOpenMPEFullFileReplacement.addActionListener((e) -> selectFileGetList(this, "MPEFullFileReplacement"));
+		jMenuFile.add(jMenuItemOpenMPEFullFileReplacement);
+
+		JMenuItem jMenuItemOpenMPEDailyUpdate = new JMenuItem("Open MPE Daily Update");
+		jMenuItemOpenMPEDailyUpdate.addActionListener((e) -> selectFileGetList(this, "MPEDailyUpdate"));
+		jMenuFile.add(jMenuItemOpenMPEDailyUpdate);
 
 		JMenu jMenuConversion = new JMenu("Conversion");
 		jMenuBar.add(jMenuConversion);
@@ -127,7 +133,7 @@ public class TreeTableMain extends JFrame {
 				@Override
 				public void handleError(BeanReaderException e) throws Exception {
 					System.err.println(e.getRecordContext().getRecordText());
-					JOptionPane.showMessageDialog(null, parseException(e), e.getMessage(), JOptionPane.ERROR_MESSAGE);
+					//JOptionPane.showMessageDialog(null, parseException(e), e.getMessage(), JOptionPane.ERROR_MESSAGE);
 				}
 			};
 			List<Object> list = streamFactoryClearingIO.createReader(outgoingVisa, file, ex);
@@ -182,6 +188,9 @@ public class TreeTableMain extends JFrame {
 
 	private static Object getObject(String name, Object obj) {
 		try {
+			if(obj.getClass().equals(String.class)) {
+				return obj;
+			}
 			name = name.substring(0,1).toUpperCase().concat(name.substring(1));
 			Method method = obj.getClass().getMethod("get" + name);
 			Object ret = method.invoke(obj);
@@ -207,10 +216,11 @@ public class TreeTableMain extends JFrame {
 			}
 			if(ret instanceof Collection) {
 				children = new ArrayList<>();
-				ArrayList list = ArrayList.class.cast(ret);
-				for(int index = 0; index < list.size(); index++) {
-					Object action = list.get(index);
-					children.addAll(parseMyDataNode(action, index + 1));
+				Iterator iterator = Collection.class.cast(ret).iterator();
+				int index = 0;
+				while (iterator.hasNext()) {
+					index++;
+					children.addAll(parseMyDataNode(iterator.next(), index));
 				}
 			}
 			String value = parse(ret);
@@ -232,6 +242,13 @@ public class TreeTableMain extends JFrame {
 
 	private static List<Field> defFields(Class<?> tClass) {
 		List<Field> list = new ArrayList<Field>();
+		if(tClass.equals(String.class)) {
+			try {
+				list.add(tClass.getDeclaredField("value"));
+			} catch (NoSuchFieldException e) {
+			}
+			return list;
+		}
 		if(!tClass.equals(Object.class)) {
 			list = defFields(tClass.getSuperclass());
 		}
@@ -258,25 +275,25 @@ public class TreeTableMain extends JFrame {
 		return root;
 	}
 
-	private static MyDataNode createDataStructure() {
-		List<MyDataNode> children1 = new ArrayList<MyDataNode>();
-		children1.add(new MyDataNode("field1", "value1", "comment1", null));
-		children1.add(new MyDataNode("field2", "value2", "comment2", null));
-		children1.add(new MyDataNode("field3", "value3", "comment3", null));
-		children1.add(new MyDataNode("field4", "value4", "comment4", null));
-
-		List<MyDataNode> rootNodes = new ArrayList<MyDataNode>();
-		rootNodes.add(new MyDataNode("line1", "values", "", children1));
-		rootNodes.add(new MyDataNode("line2", "values", "", children1));
-		rootNodes.add(new MyDataNode("line3", "values", "", children1));
-		rootNodes.add(new MyDataNode("line4", "values", "", children1));
-		rootNodes.add(new MyDataNode("line5", "values", "", children1));
-		rootNodes.add(new MyDataNode("line6", "values", "", children1));
-		rootNodes.add(new MyDataNode("line7", "values", "", children1));
-
-		MyDataNode root = new MyDataNode(" root", "", "", rootNodes);
-		return root;
-	}
+//	private static MyDataNode createDataStructure() {
+//		List<MyDataNode> children1 = new ArrayList<MyDataNode>();
+//		children1.add(new MyDataNode("field1", "value1", "comment1", null));
+//		children1.add(new MyDataNode("field2", "value2", "comment2", null));
+//		children1.add(new MyDataNode("field3", "value3", "comment3", null));
+//		children1.add(new MyDataNode("field4", "value4", "comment4", null));
+//
+//		List<MyDataNode> rootNodes = new ArrayList<MyDataNode>();
+//		rootNodes.add(new MyDataNode("line1", "values", "", children1));
+//		rootNodes.add(new MyDataNode("line2", "values", "", children1));
+//		rootNodes.add(new MyDataNode("line3", "values", "", children1));
+//		rootNodes.add(new MyDataNode("line4", "values", "", children1));
+//		rootNodes.add(new MyDataNode("line5", "values", "", children1));
+//		rootNodes.add(new MyDataNode("line6", "values", "", children1));
+//		rootNodes.add(new MyDataNode("line7", "values", "", children1));
+//
+//		MyDataNode root = new MyDataNode(" root", "", "", rootNodes);
+//		return root;
+//	}
 
 	public static void main(final String[] args) {
 		try {
