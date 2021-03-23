@@ -3,7 +3,7 @@ package org.clearingio.gui.swing.tree.table;
 import org.beanio.BeanReaderErrorHandler;
 import org.beanio.BeanReaderException;
 import org.beanio.annotation.Record;
-import org.clearingio.file.StreamFactoryClearingIO;
+import org.clearingio.file.ClearingIO;
 import org.clearingio.ipm.MsgIpm;
 import org.clearingio.ipm.annotation.PDS;
 import org.clearingio.ipm.annotation.Subfield;
@@ -27,7 +27,7 @@ import java.util.List;
 
 public class TreeTableMain extends JFrame {
 
-	private StreamFactoryClearingIO streamFactoryClearingIO = new StreamFactoryClearingIO();
+	private ClearingIO clearingIO = new ClearingIO();
 	private final Logger LOGGER = LoggerFactory.getLogger(TreeTableMain.class);
 
 	static {
@@ -136,7 +136,7 @@ public class TreeTableMain extends JFrame {
 					//JOptionPane.showMessageDialog(null, parseException(e), e.getMessage(), JOptionPane.ERROR_MESSAGE);
 				}
 			};
-			List<Object> list = streamFactoryClearingIO.createReader(outgoingVisa, file, ex);
+			List<Object> list = clearingIO.createReader(outgoingVisa, file, ex);
 			MyDataNode myDataNode = load(list.iterator(), file.getAbsolutePath());
 			MyAbstractTreeTableModel treeTableModel = new MyDataModel(myDataNode);
 			MyTreeTable myTreeTable = new MyTreeTable(treeTableModel);
