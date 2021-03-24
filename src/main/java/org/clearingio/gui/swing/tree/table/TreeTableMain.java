@@ -47,7 +47,7 @@ public class TreeTableMain extends JFrame {
 		JMenu jMenuFile = new JMenu("File");
 		jMenuBar.add(jMenuFile);
 
-		JMenuItem jMenuItemOpenISO8583 = new JMenuItem("Open ISO-8583");
+		JMenuItem jMenuItemOpenISO8583 = new JMenuItem("Open Mastercard");
 		jMenuItemOpenISO8583.addActionListener((e) -> openISO8583());
 		jMenuFile.add(jMenuItemOpenISO8583);
 
